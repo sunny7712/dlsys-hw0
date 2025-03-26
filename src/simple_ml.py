@@ -138,7 +138,27 @@ def nn_epoch(X, y, W1, W2, lr = 0.1, batch=100):
         None
     """
     ### BEGIN YOUR CODE
-    pass
+    for i in range(0, X.shape[0], batch):
+        # forward pass
+        X_batch = X[i : i + batch] # (batch, input_dim)
+        y_batch = y[i : i + batch] # (batch, )
+        z1 = X_batch @ W1 # (batch, hidden_dim)
+        h1 = np.maximum(z1, 0) # (batch, hidden_dim)
+        h2 = h1 @ W2 # (batch, num_classes)
+
+        # loss
+        numerator = np.exp(h2) # (batch, num_classes)
+        denominator = np.sum(numerator, axis = 1, keepdims = True) # (batch, 1)
+        softmax = numerator / denominator # (batch, num_classes) (broadcasting)
+        dW2 = (h1.T @ (softmax - np.eye(y_batch.max() + 1)[y_batch])) / batch # (hidden_dim, num_classes)
+        prev_grad = ((softmax - np.eye(y_batch.max() + 1)[y_batch]) @ W2.T) * (z1 > 0) # (batch, hidden_dim)
+        dW1 = (X_batch.T @ prev_grad) / batch # (input_dim, hidden_dim)
+        W2 -= lr * dW2 # backpropagation
+        W1 -= lr * dW1
+        # backpropagation
+        
+        
+
     ### END YOUR CODE
 
 
